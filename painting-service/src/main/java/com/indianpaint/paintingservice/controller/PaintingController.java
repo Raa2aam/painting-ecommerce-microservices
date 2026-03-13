@@ -1,7 +1,9 @@
 package com.indianpaint.paintingservice.controller;
 
-import com.indianpaint.paintingservice.entity.Painting;
+import com.indianpaint.paintingservice.dto.PaintingRequestDTO;
+import com.indianpaint.paintingservice.dto.PaintingResponseDTO;
 import com.indianpaint.paintingservice.service.PaintingService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -10,35 +12,39 @@ import java.util.List;
 @RequestMapping("/api/paintings")
 public class PaintingController {
 
-    private final PaintingService service;
+    private final PaintingService paintingService;
 
-    PaintingController(PaintingService service){
-        this.service = service;
+    public PaintingController(PaintingService paintingService) {
+        this.paintingService = paintingService;
     }
 
     @PostMapping
-    public Painting createPainting(@RequestBody Painting painting){
-        return service.createPainting(painting);
+    public PaintingResponseDTO createPainting(
+            @Valid @RequestBody PaintingRequestDTO dto) {
 
-    }
-
-    @GetMapping
-    public List<Painting> getPainting(){
-        return service.getAllPaintings();
+        return paintingService.createPainting(dto);
     }
 
     @GetMapping("/{id}")
-    public Painting getPaintingByid(@PathVariable int id){
-        return service.getPaintingById(id);
+    public PaintingResponseDTO getPaintingById(@PathVariable Long id) {
+        return paintingService.getPaintingById(id);
+    }
+
+    @GetMapping
+    public List<PaintingResponseDTO> getAllPaintings() {
+        return paintingService.getAllPaintings();
     }
 
     @PutMapping("/{id}")
-    public Painting updatePainting(@PathVariable int id, @RequestBody Painting painting){
-        return service.updatePainting(id, painting);
+    public PaintingResponseDTO updatePainting(
+            @PathVariable Long id,
+            @Valid @RequestBody PaintingRequestDTO dto) {
+
+        return paintingService.updatePainting(id, dto);
     }
 
     @DeleteMapping("/{id}")
-    public void deletePainting(@PathVariable int id){
-         service.deletePainting(id);
+    public void deletePainting(@PathVariable Long id) {
+        paintingService.deletePainting(id);
     }
 }

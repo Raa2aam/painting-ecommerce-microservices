@@ -1,54 +1,100 @@
 package com.indianpaint.paintingservice.service.impl;
 
+import com.indianpaint.paintingservice.dto.PaintingRequestDTO;
+import com.indianpaint.paintingservice.dto.PaintingResponseDTO;
 import com.indianpaint.paintingservice.entity.Painting;
+import com.indianpaint.paintingservice.exception.ResourceNotFoundException;
 import com.indianpaint.paintingservice.respository.PaintingRepository;
 import com.indianpaint.paintingservice.service.PaintingService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class PaintingServiceImpl implements PaintingService {
 
-    private final PaintingRepository paintingRepository;
+    private final PaintingRepository repository;
 
-    PaintingServiceImpl(PaintingRepository paintingRepository){
-        this.paintingRepository = paintingRepository;
+    public PaintingServiceImpl(PaintingRepository repository) {
+        this.repository = repository;
     }
 
-    public Painting createPainting(Painting painting) {
-        return paintingRepository.save(painting);
+    @Override
+    public PaintingResponseDTO createPainting(PaintingRequestDTO dto) {
+
+        Painting painting = new Painting();
+
+        painting.setTitle(dto.getTitle());
+        painting.setArtist(dto.getArtist());
+        painting.setPrice(dto.getPrice());
+        painting.setQuantity(dto.getQuantity());
+        painting.setDescription(dto.getDescription());
+        painting.setImageUrl(dto.getImageUrl());
+
+        Painting savedPainting = repository.save(painting);
+
+        return convertToDTO(savedPainting);
     }
 
+    @Override
+    public PaintingResponseDTO getPaintingById(Long id) {
 
-    public List<Painting> getAllPaintings() {
-        return paintingRepository.findAll();
+        Painting painting = repository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Painting not found with id: " + id));
+
+        return convertToDTO(painting);
     }
 
+    @Override
+    public List<PaintingResponseDTO> getAllPaintings() {
 
-    public Painting getPaintingById(int id) {
-        return paintingRepository.findById(id).orElse(null);
+        return repository.findAll()
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
+    @Override
+    public PaintingResponseDTO updatePainting(Long id, PaintingRequestDTO dto) {
 
-    public Painting updatePainting(int id, Painting updatedPainting) {
-        Painting existingPainting = paintingRepository.findById(id).orElse(null);
+        Painting painting = repository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Painting not found with id: " + id));
 
-        if(existingPainting == null){
-            return null;
-        }
-        existingPainting.setTitle(updatedPainting.getTitle());
-        existingPainting.setArtist(updatedPainting.getArtist());
-        existingPainting.setDescription(updatedPainting.getDescription());
-        existingPainting.setPrice(updatedPainting.getPrice());
-        existingPainting.setQuantity(updatedPainting.getQuantity());
-        existingPainting.setImageUrl(updatedPainting.getImageUrl());
+        painting.setTitle(dto.getTitle());
+        painting.setArtist(dto.getArtist());
+        painting.setPrice(dto.getPrice());
+        painting.setQuantity(dto.getQuantity());
+        painting.setDescription(dto.getDescription());
+        painting.setImageUrl(dto.getImageUrl());
 
-        return paintingRepository.save(existingPainting);
+        Painting updated = repository.save(painting);
+
+        return convertToDTO(updated);
     }
 
+    @Override
+    public void deletePainting(Long id) {
 
-    public void deletePainting(int id) {
-        paintingRepository.deleteById(id);
+        Painting painting = repository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Painting not found with id: " + id));
+
+        repository.delete(painting);
+    }
+
+    private PaintingResponseDTO convertToDTO(Painting painting) {
+
+        return PaintingResponseDTO.builder()
+                .id(painting.getId())
+                .title(painting.getTitle())
+                .artist(painting.getArtist())
+                .price(painting.getPrice())
+                .quantity(painting.getQuantity())
+                .description(painting.getDescription())
+                .imageUrl(painting.getImageUrl())
+                .build();
     }
 }

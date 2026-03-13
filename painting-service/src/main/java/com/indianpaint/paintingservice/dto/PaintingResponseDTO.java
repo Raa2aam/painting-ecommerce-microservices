@@ -1,15 +1,12 @@
-package com.indianpaint.paintingservice.entity;
+package com.indianpaint.paintingservice.dto;
 
-import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Data;
 
-@Entity
-@Table(name = "paintings")
 @Data
-public class Painting {
+@Builder
+public class PaintingResponseDTO {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String title;
